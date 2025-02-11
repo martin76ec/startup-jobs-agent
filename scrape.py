@@ -51,5 +51,8 @@ def scrape_website(website):
 
         time.sleep(30)
         return html
+
+    except:
+        print("Something went wrong!")
     # finally:
     #     driver.quit()
