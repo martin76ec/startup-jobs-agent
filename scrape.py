@@ -48,10 +48,37 @@ def scrape_website(website):
 
         sbm = driver.find_element(By.XPATH,'//*[@id="base-sign-in-modal"]/div/section/div/div/form/div[2]/button')
         sbm.click()
+        time.sleep(5)
 
+        # encontrar el tpitulo H1
+        print("Reading position...")
+        title = driver.find_element(By.XPATH, '/html/body/div[6]/div[3]/div[2]/div/div/main/div[2]/div[1]/div/div[1]/div/div/div/div[2]/div/h1')
+        print(title.text)
+
+        # encontrar el Tipo (Remoto, hibrido o presencial)
+        print("Reading type...")
+        type = driver.find_element(By.XPATH, '/html/body/div[6]/div[3]/div[2]/div/div/main/div[2]/div[1]/div/div[1]/div/div/div/div[4]/ul/li[1]/span/span[1]/span/span[1]')
+        print(type.text)
+
+        # encontrar Horas Laborales (Parcial , jornada completa)
+        print("Reading working hours...")
+        whours = driver.find_element(By.XPATH, '/html/body/div[6]/div[3]/div[2]/div/div/main/div[2]/div[1]/div/div[1]/div/div/div/div[4]/ul/li[1]/span/span[2]/span/span[1]')
+        print(whours.text)
+
+        # encontrar el seniority (director, intermedio, etc)
+        print("Reading level of seniority...")
+        level = driver.find_element(By.XPATH, '/html/body/div[6]/div[3]/div[2]/div/div/main/div[2]/div[1]/div/div[1]/div/div/div/div[4]/ul/li[1]/span/span[3]')
+        print(level.text)
+
+        # encontrar la descripcion
+        print("Reading description...")
+        desc = driver.find_element(By.XPATH, '//*[@id="job-details"]/div/p')
+        print(desc.text)
+
+        time.sleep(10)
         ### Encontrar el <ul>
-        ul_element = driver.find_element(By.XPATH, '//*[@id="main"]/div/div[2]/div[1]/div/ul')
-        print(ul_element.text)
+        # ul_element = driver.find_element(By.XPATH, '//*[@id="main"]/div/div[2]/div[1]/div/ul')
+        # print(ul_element.text)
 
         '''
         # Encontrar todos los <li> dentro del <ul>
@@ -81,6 +108,7 @@ def scrape_website(website):
 
 
 # Ejecutar automáticamente si el script se corre directamente
+'''
 if __name__ == "__main__":
     URL_HARDCODEADA = "https://www.linkedin.com/jobs/search/?currentJobId=4131896161&distance=25&geoId=102927786&keywords=product%20manager&origin=JOBS_HOME_KEYWORD_HISTORY&refresh=true"
     resultado = scrape_website(URL_HARDCODEADA)
@@ -89,3 +117,4 @@ if __name__ == "__main__":
         print("Scraping exitoso")
     else:
         print("Hubo un error en el scraping")
+'''
