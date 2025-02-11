@@ -49,10 +49,43 @@ def scrape_website(website):
         sbm = driver.find_element(By.XPATH,'//*[@id="base-sign-in-modal"]/div/section/div/div/form/div[2]/button')
         sbm.click()
 
-        time.sleep(30)
-        return html
+        ### Encontrar el <ul>
+        ul_element = driver.find_element(By.XPATH, '//*[@id="main"]/div/div[2]/div[1]/div/ul')
+        print(ul_element.text)
 
+        '''
+        # Encontrar todos los <li> dentro del <ul>
+        li_elements = ul_element.find_elements(By.TAG_NAME, "li")
+
+        # Iterar sobre cada <li>
+        for li in li_elements:
+            try:
+                # Buscar el <a> siguiendo la estructura especificada
+                a_element = li.find_element(By.XPATH, "./div[4]/div[2]/div[1]/a")
+
+                # Extraer y mostrar el texto del <a>
+                link_text = a_element.text
+
+                print(f"Texto del enlace: {link_text}")
+
+            except Exception as e:
+                print("No se encontró el enlace en este <li>")
+
+        time.sleep(30)
+        # return html
+        '''
     except:
         print("Something went wrong!")
     # finally:
     #     driver.quit()
+
+
+# Ejecutar automáticamente si el script se corre directamente
+if __name__ == "__main__":
+    URL_HARDCODEADA = "https://www.linkedin.com/jobs/search/?currentJobId=4131896161&distance=25&geoId=102927786&keywords=product%20manager&origin=JOBS_HOME_KEYWORD_HISTORY&refresh=true"
+    resultado = scrape_website(URL_HARDCODEADA)
+
+    if resultado:
+        print("Scraping exitoso")
+    else:
+        print("Hubo un error en el scraping")
