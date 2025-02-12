@@ -1471,6 +1471,22 @@ pyarrow = ["pyarrow (>=11.0.0)"]
 pyspark = ["pyspark (>=3.5.0)"]
 
 [[package]]
+name = "notion-client"
+version = "2.3.0"
+description = "Python client for the official Notion API"
+optional = false
+python-versions = "<4,>=3.7"
+groups = ["main"]
+markers = "python_version <= \"3.11\" or python_version >= \"3.12\""
+files = [
+    {file = "notion-client-2.3.0.tar.gz", hash = "sha256:c4b4ae04ce182eb89611d41544dac710049683a4d7309c4b22fde52f81cbcb39"},
+    {file = "notion_client-2.3.0-py2.py3-none-any.whl", hash = "sha256:6696bb057b7872477077d6a3bb4299c4a7924450e7d168174e79cbf8e01d9576"},
+]
+
+[package.dependencies]
+httpx = ">=0.23.0"
+
+[[package]]
 name = "notion-database"
 version = "1.2.2"
 description = "Python bindings for Notion Database API"
@@ -3328,4 +3344,4 @@ cffi = ["cffi (>=1.11)"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.10"
-content-hash = "ef763f63ac941f020f1f4bafaee6bbbce926c3095d99f6933c204ec49de1a8e1"
+content-hash = "171560eb6a67bc54a4472a67715fcf493b99be54c844c102a843a133e6b3a1b8"
