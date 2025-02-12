@@ -1,5 +1,5 @@
-from typing import Any, Dict, Optional, cast
-from src.constants.env import DB_ID, NOTION_KEY
+from typing import Any, Dict, Literal, Optional, cast
+from src.constants.env import DB_ID
 from src.infrastructure.notion import notion
 from dataclasses import dataclass
 
@@ -59,10 +59,22 @@ def job_raw_to_obj(raw_job: Dict[str, Any]) -> NotionData:
     )
 
 
-async def jobs_get():
-    query = cast(dict, notion.databases.query(database_id=DB_ID))
+async def jobs_get_by_status(status: Literal["In Review", "Aproved"]):
+    query = cast(
+        dict,
+        notion.databases.query(
+            **{
+                "database_id": DB_ID,
+                "filter": {
+                    "property": "Status",
+                    "status": {
+                        "equals": status,
+                    },
+                },
+            }
+        ),
+    )
+
     results = query["results"]
     jobs = [job_raw_to_obj(r) for r in results]
-    breakpoint()
     return jobs
-
