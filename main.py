@@ -7,4 +7,6 @@ url = st.text_input("Enter a websiete URL")
 if st.button("Scrape Site"):
     st.write("Scrapping the website")
     result = scrape_website(url)
-    print(result)
+    # print(result)
+
+   # st.session_state.dom_content =

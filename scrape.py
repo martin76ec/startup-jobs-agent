@@ -31,54 +31,77 @@ def scrape_website(website):
     driver = webdriver.Chrome(service=Service(chrome_driver_path), options=options)
 
     try:
-        driver.get(website)
-        print("Page loaded...")
-        html = driver.page_source
+        try:
+            driver.get(website)
+            print("Loading page...")
+            html = driver.page_source
 
-        # nuevo codigo para logueo
-        button = driver.find_element(By.XPATH, '//*[@id="base-contextual-sign-in-modal"]/div/section/div/div/div/div[2]/button')
-        button.click()
-        time.sleep(5)
-        user = driver.find_element(By.XPATH, '//*[@id="base-sign-in-modal_session_key"]')
-        user.send_keys(LINKEDIN_EMAIL)
+            # nuevo codigo para logueo
+            button = driver.find_element(By.XPATH, '//*[@id="base-contextual-sign-in-modal"]/div/section/div/div/div/div[2]/button')
+            button.click()
+            time.sleep(5)
+            user = driver.find_element(By.XPATH, '//*[@id="base-sign-in-modal_session_key"]')
+            user.send_keys(LINKEDIN_EMAIL)
 
-        pwd = driver.find_element(By.XPATH, '//*[@id="base-sign-in-modal_session_password"]')
-        pwd.send_keys(LINKEDIN_PASSWORD)
-        time.sleep(2)
+            pwd = driver.find_element(By.XPATH, '//*[@id="base-sign-in-modal_session_password"]')
+            pwd.send_keys(LINKEDIN_PASSWORD)
+            time.sleep(2)
 
-        sbm = driver.find_element(By.XPATH,'//*[@id="base-sign-in-modal"]/div/section/div/div/form/div[2]/button')
-        sbm.click()
-        time.sleep(5)
+            sbm = driver.find_element(By.XPATH,'//*[@id="base-sign-in-modal"]/div/section/div/div/form/div[2]/button')
+            sbm.click()
+            time.sleep(3)
+            print("Login successful!")
 
-        # encontrar el tpitulo H1
-        print("Reading position...")
-        title = driver.find_element(By.XPATH, '/html/body/div[6]/div[3]/div[2]/div/div/main/div[2]/div[1]/div/div[1]/div/div/div/div[2]/div/h1')
-        print(title.text)
+        except:
+            print("Could not login...")
 
-        # encontrar el Tipo (Remoto, hibrido o presencial)
-        print("Reading type...")
-        type = driver.find_element(By.XPATH, '/html/body/div[6]/div[3]/div[2]/div/div/main/div[2]/div[1]/div/div[1]/div/div/div/div[4]/ul/li[1]/span/span[1]/span/span[1]')
-        print(type.text)
+        job_data = {}
 
-        # encontrar Horas Laborales (Parcial , jornada completa)
-        print("Reading working hours...")
-        whours = driver.find_element(By.XPATH, '/html/body/div[6]/div[3]/div[2]/div/div/main/div[2]/div[1]/div/div[1]/div/div/div/div[4]/ul/li[1]/span/span[2]/span/span[1]')
-        print(whours.text)
+        try:
+            # encontrar el titulo H1
+            print("Reading position...")
+            title = driver.find_element(By.XPATH, '/html/body/div[6]/div[3]/div[2]/div/div/main/div[2]/div[1]/div/div[1]/div/div/div/div[2]/div/h1').text
+            job_data['title'] = title
+        except:
+            job_data['title'] = "null"
 
-        # encontrar el seniority (director, intermedio, etc)
-        print("Reading level of seniority...")
-        level = driver.find_element(By.XPATH, '/html/body/div[6]/div[3]/div[2]/div/div/main/div[2]/div[1]/div/div[1]/div/div/div/div[4]/ul/li[1]/span/span[3]')
-        print(level.text)
+        try:
+            # encontrar el Tipo (Remoto, hibrido o presencial)
+            print("Reading type...")
+            type = driver.find_element(By.XPATH, '/html/body/div[6]/div[3]/div[2]/div/div/main/div[2]/div[1]/div/div[1]/div/div/div/div[4]/ul/li[1]/span/span[1]/span/span[1]').text
+            job_data['type'] = type
+        except:
+            job_data['type'] = "null"
 
-        # encontrar la descripcion
-        print("Reading description...")
-        desc = driver.find_element(By.XPATH, '//*[@id="job-details"]/div/p')
-        print(desc.text)
+        try:
+            # encontrar Horas Laborales (Parcial , jornada completa)
+            print("Reading working hours...")
+            hours = driver.find_element(By.XPATH, '/html/body/div[6]/div[3]/div[2]/div/div/main/div[2]/div[1]/div/div[1]/div/div/div/div[4]/ul/li[1]/span/span[2]/span/span[1]').text
+            job_data['hours'] = hours
+        except:
+            job_data['hours'] = "null"
 
+        try:
+            # encontrar el seniority (director, intermedio, etc)
+            print("Reading level of seniority...")
+            seniority = driver.find_element(By.XPATH, '/html/body/div[6]/div[3]/div[2]/div/div/main/div[2]/div[1]/div/div[1]/div/div/div/div[4]/ul/li[1]/span/span[3]').text
+            job_data['seniority'] = seniority
+        except:
+            job_data['seniority'] = "null"
+
+        try:
+            # encontrar la descripcion
+            print("Reading description...")
+            description = driver.find_element(By.XPATH, '//*[@id="job-details"]/div/p').text
+            job_data['description'] = description
+        except:
+            job_data['description'] = "null"
+
+        print(job_data)
         time.sleep(10)
-        ### Encontrar el <ul>
-        # ul_element = driver.find_element(By.XPATH, '//*[@id="main"]/div/div[2]/div[1]/div/ul')
-        # print(ul_element.text)
+            ### Encontrar el <ul>
+            # ul_element = driver.find_element(By.XPATH, '//*[@id="main"]/div/div[2]/div[1]/div/ul')
+            # print(ul_element.text)
 
         '''
         # Encontrar todos los <li> dentro del <ul>
