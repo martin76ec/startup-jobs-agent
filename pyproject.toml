@@ -1,0 +1,38 @@
+[project]
+name = "chat-backend"
+version = "0.1.0"
+description = ""
+authors = [
+  { name = "rafarubin", email = "rafa@gmail.com" },
+  { name = "martin76ec", email = "larreaamartin@gmail.com" },
+]
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "streamlit (>=1.42.0,<2.0.0)",
+  "langchain (>=0.3.18,<0.4.0)",
+  "langchain-ollama (>=0.2.3,<0.3.0)",
+  "selenium (>=4.28.1,<5.0.0)",
+  "beautifulsoup4 (>=4.13.3,<5.0.0)",
+  "lxml (>=5.3.1,<6.0.0)",
+  "html5lib (>=1.1,<2.0)",
+  "python-dotenv (>=1.0.1,<2.0.0)",
+  "notion-database (>=1.2.2,<2.0.0)",
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.10"
+
+[tool.poetry.group.dev.dependencies]
+poethepoet = "^0.32.2"
+
+[tool.poe.tasks]
+dev = "streamlit run ./src/main.py"
