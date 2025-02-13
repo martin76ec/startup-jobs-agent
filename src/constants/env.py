@@ -14,3 +14,6 @@ LINKEDIN_PASSWORD: str = os.getenv("LINKEDIN_PASSWORD") or "default"
 # CHROME
 CHROME_DRIVER_PATH = os.getenv("CHROME_DRIVER_PATH") or "default"
 CHROME_BINARY_PATH = os.getenv("CHROME_BINARY_PATH") or "default"
+
+# GROQ
+GROQ_KEY = os.getenv("GROQ_KEY") or "default"
