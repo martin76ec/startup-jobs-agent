@@ -74,7 +74,6 @@ def job_summarize_description(description: str):
     """
         }
     )
-    breakpoint()
 
     return response.content
 
@@ -86,10 +85,20 @@ async def jobs_get_by_status(status: Literal["In Review", "Aproved"]):
             **{
                 "database_id": DB_ID,
                 "filter": {
-                    "property": "Status",
-                    "status": {
-                        "equals": status,
-                    },
+                    "and": [
+                        {
+                            "property": "Status",
+                            "status": {
+                                "equals": status,
+                            },
+                        },
+                        {
+                            "property": "Apply URL",
+                            "url": {
+                                "is_not_empty": True,
+                            },
+                        },
+                    ]
                 },
             }
         ),
