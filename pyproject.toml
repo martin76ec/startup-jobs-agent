@@ -36,5 +36,4 @@ python = "^3.10"
 poethepoet = "^0.32.2"
 
 [tool.poe.tasks]
-dev = "streamlit run ./src/main.py"
-start = "python ./src/main2.py"
+dev = "streamlit run ./src/runners/cmd.py"

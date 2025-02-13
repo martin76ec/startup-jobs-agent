@@ -1,6 +1,7 @@
 from src.domain.jobs import jobs_get_by_status
+from src.scrapers.linkedin import scrape_jobs
 import asyncio
 
+jobs = asyncio.run(scrape_jobs())
 
-data = asyncio.run(jobs_get_by_status("In Review"))
-print(data)
+print(jobs)
