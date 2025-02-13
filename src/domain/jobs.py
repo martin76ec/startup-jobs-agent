@@ -2,10 +2,12 @@ from typing import Any, Dict, Literal, Optional, cast
 from src.constants.env import DB_ID
 from src.infrastructure.notion import notion
 from dataclasses import dataclass
+from src.infrastructure.groq import groq_chat
+from langchain_core.prompts import ChatPromptTemplate
 
 
 @dataclass
-class NotionData:
+class JobOffer:
     apply_url: Optional[str]
     company_hq: Optional[str]
     date_scrapped: Optional[str]
@@ -18,8 +20,8 @@ class NotionData:
     vertical: Optional[str]
 
 
-def job_raw_to_obj(raw_job: Dict[str, Any]) -> NotionData:
-    return NotionData(
+def job_raw_to_obj(raw_job: Dict[str, Any]) -> JobOffer:
+    return JobOffer(
         apply_url=raw_job.get("properties", {}).get("Apply URL", {}).get("url"),
         company_hq=raw_job.get("properties", {})
         .get("Company HQ", {})
@@ -57,6 +59,24 @@ def job_raw_to_obj(raw_job: Dict[str, Any]) -> NotionData:
         .get("select", {})
         .get("name"),
     )
+
+
+def job_summarize_description(description: str):
+    system = "You are an expert human resources specialist"
+    human = "{text}"
+    prompt = ChatPromptTemplate.from_messages([("system", system), ("human", human)])
+    chain = prompt | groq_chat
+    response = chain.invoke(
+        {
+            "text": f"""
+    summarize #JOBOFFER
+    {description}
+    """
+        }
+    )
+    breakpoint()
+
+    return response.content
 
 
 async def jobs_get_by_status(status: Literal["In Review", "Aproved"]):

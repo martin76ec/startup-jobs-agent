@@ -5,7 +5,7 @@ from selenium.webdriver.common.by import By
 from src.constants.env import CHROME_BINARY_PATH, CHROME_DRIVER_PATH, LINKEDIN_EMAIL, LINKEDIN_PASSWORD
 import time
 
-from src.domain.jobs import jobs_get_by_status
+from src.domain.jobs import job_summarize_description, jobs_get_by_status
 
 async def scrape_jobs():
     jobs = await jobs_get_by_status("In Review")
@@ -109,6 +109,9 @@ def scrape_website(website):
                 By.XPATH, '//*[@id="job-details"]/div/p'
             ).text
             job_data["description"] = description
+            desc = job_summarize_description(description)
+            job_data["description"] = desc
+
         except:
             job_data["description"] = "null"
 
