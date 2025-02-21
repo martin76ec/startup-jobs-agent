@@ -10,8 +10,6 @@ readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
   "streamlit (>=1.42.0,<2.0.0)",
-  "langchain (>=0.3.18,<0.4.0)",
-  "langchain-ollama (>=0.2.3,<0.3.0)",
   "selenium (>=4.28.1,<5.0.0)",
   "beautifulsoup4 (>=4.13.3,<5.0.0)",
   "lxml (>=5.3.1,<6.0.0)",
@@ -19,7 +17,6 @@ dependencies = [
   "python-dotenv (>=1.0.1,<2.0.0)",
   "notion-database (>=1.2.2,<2.0.0)",
   "notion-client (>=2.3.0,<3.0.0)",
-  "langchain-groq (>=0.2.4,<0.3.0)",
 ]
 
 
@@ -37,4 +34,4 @@ python = "^3.10"
 poethepoet = "^0.32.2"
 
 [tool.poe.tasks]
-dev = "streamlit run ./src/runners/cmd.py"
+dev = "python main.py"
