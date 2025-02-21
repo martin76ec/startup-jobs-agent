@@ -25,6 +25,7 @@ def scrape_website(website):
     options.add_argument("--no-sandbox")
     options.add_argument("--headless")
 
+    # breakpoint()
     driver = webdriver.Chrome(service=Service(chrome_driver_path), options=options)
     scraper = LinkedInScrapper(url=website, driver=driver)
     offer_data = scraper.scrap()

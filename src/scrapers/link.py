@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from bs4 import BeautifulSoup
 from src.constants.env import LINKEDIN_EMAIL, LINKEDIN_PASSWORD
 from src.constants.utils import error_handler_print
 from src.scrapers.base import OfferScrapper
@@ -29,7 +30,7 @@ class LinkedInScrapper(OfferScrapper):
         pass_input='//*[@id="base-sign-in-modal_session_password"]',
         auth_button='//*[@id="base-sign-in-modal"]/div/section/div/div/form/div[2]/button',
         offer_title="/html/body/div[6]/div[3]/div[2]/div/div/main/div[2]/div[1]/div/div[1]/div/div/div/div[2]/div/h1",
-        offer_position="/html/body/div[6]/div[3]/div[2]/div/div/main/div[2]/div[1]/div/div[1]/div/div/div/div[4]/ul/li[1]/span/span[1]/span/span[1]",
+        offer_position="/html/body/div[6]/div[3]/div[2]/div/div/main/div[2]/div[1]/div/div[1]/div/div/div/div[4]/ul/li[1]/span/span[1]/span/span[2]",
         offer_type="/html/body/div[6]/div[3]/div[2]/div/div/main/div[2]/div[1]/div/div[1]/div/div/div/div[4]/ul/li[1]/span/span[1]/span/span[1]",
         offer_hours="/html/body/div[6]/div[3]/div[2]/div/div/main/div[2]/div[1]/div/div[1]/div/div/div/div[4]/ul/li[1]/span/span[2]/span/span[1]",
         offer_seniority="/html/body/div[6]/div[3]/div[2]/div/div/main/div[2]/div[1]/div/div[1]/div/div/div/div[4]/ul/li[1]/span/span[3]",
@@ -78,8 +79,16 @@ class LinkedInScrapper(OfferScrapper):
         description_element = wait.until(
             EC.presence_of_element_located((By.ID, self.xpaths.offer_description))
         )
-        paragraphs = description_element.find_elements(By.TAG_NAME, "p")
-        return "\n".join([p.text for p in paragraphs if p.text.strip()])
+
+        description = description_element.get_attribute("innerHTML")
+        if description is None:
+            return None
+
+        soup = BeautifulSoup(description, "html.parser")
+        paragraphs = soup.find_all(["p", "li"])
+        return "\n".join(
+            [el.get_text(strip=True) for el in paragraphs if el.get_text(strip=True)]
+        )
 
     def scrap(self):
         self.login()
