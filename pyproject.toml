@@ -20,6 +20,7 @@ dependencies = [
   "notion-database (>=1.2.2,<2.0.0)",
   "notion-client (>=2.3.0,<3.0.0)",
   "langchain-groq (>=0.2.4,<0.3.0)",
+  "pymupdf4llm (>=0.0.17,<0.0.18)",
 ]
 
 
