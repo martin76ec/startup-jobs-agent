@@ -62,7 +62,7 @@ def job_raw_to_obj(raw_job: Dict[str, Any]) -> JobOffer:
 
 
 def job_summarize_description(description: str):
-    system = "You are an expert human resources specialist"
+    system = "You are an expert human resources specialist, you are native in english and spanish, and you translate summarize and translate to spanish the job offer"
     human = "{text}"
     prompt = ChatPromptTemplate.from_messages([("system", system), ("human", human)])
     chain = prompt | groq_chat
@@ -75,7 +75,7 @@ def job_summarize_description(description: str):
         }
     )
 
-    return response.content
+    return response.text()
 
 
 async def jobs_get_by_status(status: Literal["In Review", "Aproved"]):

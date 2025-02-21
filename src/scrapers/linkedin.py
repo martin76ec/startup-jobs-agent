@@ -29,5 +29,8 @@ def scrape_website(website):
     driver = webdriver.Chrome(service=Service(chrome_driver_path), options=options)
     scraper = LinkedInScrapper(url=website, driver=driver)
     offer_data = scraper.scrap()
-    print(offer_data)
 
+    if offer_data.description != None:
+        offer_data.description = job_summarize_description(offer_data.description)
+
+    return offer_data
