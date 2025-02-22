@@ -17,3 +17,6 @@ CHROME_BINARY_PATH = os.getenv("CHROME_BINARY_PATH") or "default"
 
 # GROQ
 GROQ_KEY = os.getenv("GROQ_KEY") or "default"
+
+# GENAI
+GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY") or "default"
