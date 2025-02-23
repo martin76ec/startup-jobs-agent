@@ -4,6 +4,7 @@ from src.infrastructure.selenium import ChromeDriverSingleton
 from src.readers.pdf import summarize_content
 from streamlit.runtime.uploaded_file_manager import UploadedFile
 from src.scrapers.linkedin import LinkedInScrapper
+from PIL import Image
 
 
 def process_text_input(text):
@@ -26,9 +27,23 @@ def process_pdf(file: UploadedFile):
         st.markdown(content)
 
 
-def process_image(uploaded_file: UploadedFile):
-    st.image(uploaded_file, caption="Uploaded Image")
-    st.write("Image processed successfully!")
+def process_image(file: UploadedFile):
+    st.write(f"Processing Image: {file.name}")
+
+    try:
+        image = Image.open(file)
+    except Exception as e:
+        st.error("Error abriendo la imagen " + e.__str__())
+        return
+
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".webp") as tmp:
+        image.save(tmp, format="WEBP")
+        tmp_path = tmp.name
+
+    content = summarize_content(tmp_path)
+
+    with st.expander("Ver resumen"):
+        st.markdown(content)
 
 
 def run_app():
