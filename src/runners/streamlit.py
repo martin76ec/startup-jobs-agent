@@ -1,12 +1,19 @@
 import streamlit as st
-from streamlit.runtime.uploaded_file_manager import UploadedFile
 import tempfile
-
+from src.infrastructure.selenium import ChromeDriverSingleton
 from src.readers.pdf import summarize_content
+from streamlit.runtime.uploaded_file_manager import UploadedFile
+from src.scrapers.linkedin import LinkedInScrapper
 
 
 def process_text_input(text):
-    st.write(f"Processed Text: {text.upper()}")
+    breakpoint()
+    driver = ChromeDriverSingleton.get_instance()
+    linkedin = LinkedInScrapper(text, driver)
+    content = linkedin.scrap()
+    st.write(f"Procesando: {text.upper()}")
+    with st.expander("ver resumen"):
+        st.markdown(content)
 
 
 def process_pdf(file: UploadedFile):
