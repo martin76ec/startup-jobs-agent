@@ -1,5 +1,7 @@
 import streamlit as st
 import tempfile
+from src.constants.env import DB_ID
+from src.infrastructure import notion
 from src.infrastructure.selenium import ChromeDriverSingleton
 from src.readers.pdf import summarize_content
 from streamlit.runtime.uploaded_file_manager import UploadedFile
@@ -7,40 +9,40 @@ from src.scrapers.linkedin import LinkedInScrapper
 from PIL import Image
 
 
-def process_text_input(text):
-    breakpoint()
-    driver = ChromeDriverSingleton.get_instance()
-    linkedin = LinkedInScrapper(text, driver)
-    content = linkedin.scrap()
-    st.write(f"Procesando: {text.upper()}")
+def process_text_input(url):
+    with st.spinner(f"Processing {url}"):
+        driver = ChromeDriverSingleton.get_instance()
+        linkedin = LinkedInScrapper(url, driver)
+        summary = linkedin.scrap()
+
     with st.expander("ver resumen"):
-        st.markdown(content)
+        st.markdown(summary)
+        if st.button("guardar"):
+            with st.spinner(f"Guardando..."):
+                notion.notion.pages.create(
+                    parent={"database_id": DB_ID},
+                    properties=summary
+                )
 
 
 def process_pdf(file: UploadedFile):
-    st.write(f"Processing PDF: {file.name}")
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
-        tmp.write(file.read())
-        tmp_path = tmp.name
-    content = summarize_content(tmp_path)
+    with st.spinner(f"Processing {file.name}"):
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
+            tmp.write(file.read())
+            tmp_path = tmp.name
+        content = summarize_content(tmp_path)
+
     with st.expander("ver resumen"):
         st.markdown(content)
 
 
 def process_image(file: UploadedFile):
-    st.write(f"Processing Image: {file.name}")
-
-    try:
+    with st.spinner(f"Processing {file.name}"):
         image = Image.open(file)
-    except Exception as e:
-        st.error("Error abriendo la imagen " + e.__str__())
-        return
-
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".webp") as tmp:
-        image.save(tmp, format="WEBP")
-        tmp_path = tmp.name
-
-    content = summarize_content(tmp_path)
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".webp") as tmp:
+            image.save(tmp, format="WEBP")
+            tmp_path = tmp.name
+        content = summarize_content(tmp_path)
 
     with st.expander("Ver resumen"):
         st.markdown(content)

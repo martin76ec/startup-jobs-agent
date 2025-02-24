@@ -16,12 +16,12 @@ class LinkedInXPaths:
     email_input: str
     pass_input: str
     auth_button: str
-    offer_title: str
-    offer_position: str
-    offer_type: str
-    offer_hours: str
-    offer_seniority: str
-    offer_description: str
+    company_name: str
+    title: str
+    position: str
+    remote: str
+    location: str
+    description: str
 
 
 class LinkedInScrapper(OfferScrapper):
@@ -30,12 +30,12 @@ class LinkedInScrapper(OfferScrapper):
         email_input='//*[@id="base-sign-in-modal_session_key"]',
         pass_input='//*[@id="base-sign-in-modal_session_password"]',
         auth_button='//*[@id="base-sign-in-modal"]/div/section/div/div/form/div[2]/button',
-        offer_title="/html/body/div[6]/div[3]/div[2]/div/div/main/div[2]/div[1]/div/div[1]/div/div/div/div[2]/div/h1",
-        offer_position="/html/body/div[6]/div[3]/div[2]/div/div/main/div[2]/div[1]/div/div[1]/div/div/div/div[4]/ul/li[1]/span/span[1]/span/span[2]",
-        offer_type="/html/body/div[6]/div[3]/div[2]/div/div/main/div[2]/div[1]/div/div[1]/div/div/div/div[4]/ul/li[1]/span/span[1]/span/span[1]",
-        offer_hours="/html/body/div[6]/div[3]/div[2]/div/div/main/div[2]/div[1]/div/div[1]/div/div/div/div[4]/ul/li[1]/span/span[2]/span/span[1]",
-        offer_seniority="/html/body/div[6]/div[3]/div[2]/div/div/main/div[2]/div[1]/div/div[1]/div/div/div/div[4]/ul/li[1]/span/span[3]",
-        offer_description="job-details",
+        company_name="/html/body/div[5]/div[3]/div[4]/div/div/main/div/div[2]/div[2]/div/div[2]/div/div/div[1]/div/div[1]/div/div[1]/div/div[1]/div[1]/div/a",
+        title="/html/body/div[6]/div[3]/div[2]/div/div/main/div[2]/div[1]/div/div[1]/div/div/div/div[2]/div/h1",
+        position="/html/body/div[6]/div[3]/div[2]/div/div/main/div[2]/div[1]/div/div[1]/div/div/div/div[4]/ul/li[1]/span/span[1]/span/span[2]",
+        remote="/html/body/div[5]/div[3]/div[4]/div/div/main/div/div[2]/div[2]/div/div[2]/div/div/div[1]/div/div[1]/div/div[1]/div/div[4]/ul/li[1]/span/span[1]/span/span[1]",
+        location="/html/body/div[5]/div[3]/div[4]/div/div/main/div/div[2]/div[2]/div/div[2]/div/div/div[1]/div/div[1]/div/div[1]/div/div[3]/div/span[1]",
+        description="job-details",
     )
 
     def login(self):
@@ -56,29 +56,29 @@ class LinkedInScrapper(OfferScrapper):
 
     @error_handler_print()
     def title_get(self):
-        return self.driver.find_element(By.XPATH, self.xpaths.offer_title).text
+        return self.driver.find_element(By.XPATH, self.xpaths.title).text
+
+    @error_handler_print()
+    def company_name_get(self):
+        return self.driver.find_element(By.XPATH, self.xpaths.company_name).text
 
     @error_handler_print()
     def position_get(self):
-        return self.driver.find_element(By.XPATH, self.xpaths.offer_position).text
+        return self.driver.find_element(By.XPATH, self.xpaths.position).text
 
     @error_handler_print()
-    def type_get(self):
-        return self.driver.find_element(By.XPATH, self.xpaths.offer_type).text
+    def remote_get(self):
+        return self.driver.find_element(By.XPATH, self.xpaths.remote).text
 
     @error_handler_print()
-    def hours_get(self):
-        return self.driver.find_element(By.XPATH, self.xpaths.offer_hours).text
-
-    @error_handler_print()
-    def seniority_get(self):
-        return self.driver.find_element(By.XPATH, self.xpaths.offer_seniority).text
+    def location_get(self):
+        return self.driver.find_element(By.XPATH, self.xpaths.location).text
 
     @error_handler_print()
     def description_get(self):
         wait = WebDriverWait(self.driver, 10)
         description_element = wait.until(
-            EC.presence_of_element_located((By.ID, self.xpaths.offer_description))
+            EC.presence_of_element_located((By.ID, self.xpaths.description))
         )
 
         description = description_element.get_attribute("innerHTML")
@@ -93,14 +93,21 @@ class LinkedInScrapper(OfferScrapper):
 
     def scrap(self):
         self.login()
-        self.offer_data.title = self.title_get()
-        self.offer_data.position = self.position_get()
-        self.offer_data.type = self.type_get()
-        self.offer_data.hours = self.hours_get()
-        self.offer_data.seniority = self.seniority_get()
+        self.offer_data.role = self.title_get()
+        self.offer_data.remote = self.remote_get() == "En remoto"
+        self.offer_data.company_name = self.company_name_get()
+        self.offer_data.apply_url = self.url
+        self.offer_data.location = self.location_get()
         description = self.description_get()
 
         if description != None:
-            self.offer_data.description = job_summarize_description(description)
+            summary = job_summarize_description(description)
+
+            if self.offer_data.role == None: self.offer_data.role = summary.name
+            if self.offer_data.company_name == None: self.offer_data.company_name = summary.startup
+            if self.offer_data.location == None: self.offer_data.location = summary.company_hq
+
+            self.offer_data.vertical = summary.vertical
+            self.offer_data.details = summary.details
 
         return self.offer_data

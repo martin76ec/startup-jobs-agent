@@ -1,4 +1,8 @@
+from time import strftime
 from typing import Any, Dict, Literal, Optional, cast
+from typing_extensions import Annotated
+
+from pydantic import BaseModel, Field
 from src.constants.env import DB_ID
 from src.infrastructure.notion import notion
 from dataclasses import dataclass
@@ -12,12 +16,32 @@ class JobOffer:
     company_hq: Optional[str]
     date_scrapped: Optional[str]
     details: Optional[str]
-    id: Optional[int]
     name: Optional[str]
     remote: Optional[str]
     startup: Optional[str]
     status: Optional[str]
     vertical: Optional[str]
+
+
+class JobOfferStruct(BaseModel):
+    company_hq: str = Field(
+        default="",
+        description="the city and country of the offer in format: City, Country",
+    )
+    details: str = Field(
+        default="", description="the details in markdown about the job"
+    )
+    name: str = Field(default="", description="the role of the position")
+    remote: str = Field(
+        default="", description="the type of job, remote, hybrid or presential"
+    )
+    startup: str = Field(
+        default="", description="the name of the company that makes the offer"
+    )
+    vertical: str = Field(
+        default="",
+        description="The area of work (e.g Data, Engineering, Marketing[str,)",
+    )
 
 
 def job_raw_to_obj(raw_job: Dict[str, Any]) -> JobOffer:
@@ -65,7 +89,8 @@ def job_summarize_description(description: str):
     system = "You are an expert human resources specialist, you are native in english and spanish, and you translate summarize and translate to spanish the job offer"
     human = "{text}"
     prompt = ChatPromptTemplate.from_messages([("system", system), ("human", human)])
-    chain = prompt | groq_chat
+    model = groq_chat.with_structured_output(JobOfferStruct)
+    chain = prompt | model
     response = chain.invoke(
         {
             "text": f"""
@@ -75,7 +100,7 @@ def job_summarize_description(description: str):
         }
     )
 
-    return response.text()
+    return response
 
 
 async def jobs_get_by_status(status: Literal["In Review", "Aproved"]):
