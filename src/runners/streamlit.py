@@ -1,7 +1,8 @@
 import streamlit as st
 import tempfile
 from src.constants.env import DB_ID
-from src.infrastructure import notion
+from src.infrastructure.notion import notion
+from src.infrastructure.positions_raw import PositionsDS
 from src.infrastructure.selenium import ChromeDriverSingleton
 from src.readers.pdf import summarize_content
 from streamlit.runtime.uploaded_file_manager import UploadedFile
@@ -11,18 +12,34 @@ from PIL import Image
 
 def process_text_input(url):
     with st.spinner(f"Processing {url}"):
-        driver = ChromeDriverSingleton.get_instance()
-        linkedin = LinkedInScrapper(url, driver)
-        summary = linkedin.scrap()
+        # driver = ChromeDriverSingleton.get_instance()
+        # linkedin = LinkedInScrapper(url, driver)
+        # summary = linkedin.scrap()
+        summary = {}
 
-    with st.expander("ver resumen"):
-        st.markdown(summary)
-        if st.button("guardar"):
-            with st.spinner(f"Guardando..."):
-                notion.notion.pages.create(
-                    parent={"database_id": DB_ID},
-                    properties=summary
-                )
+        status_id = None
+
+        data = {
+            "Role": "test",
+            "Location": "test",
+            "Summary": "test",
+            "Vertical": "test",
+            "Apply URL": "test",
+            "Location": "test",
+            "Summary": "test",
+            "Status": {"id": status_id},
+        }
+        # breakpoint()
+
+        PositionsDS.position_create(summary)
+        notion.pages.create(parent={"database_id": DB_ID}, properties=data)
+
+        # with st.expander("ver resumen"):
+        #     # st.markdown(summary)
+        #
+        # if st.button("guardar"):
+        #     st.write("sadfasdf")
+        #     print("#######################################################################")
 
 
 def process_pdf(file: UploadedFile):

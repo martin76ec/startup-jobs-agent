@@ -38,6 +38,7 @@ class LinkedInScrapper(OfferScrapper):
         description="job-details",
     )
 
+    @error_handler_print()
     def login(self):
         self.driver.get(self.url)
         self.driver.find_element(By.XPATH, self.xpaths.login_button).click()
@@ -94,7 +95,7 @@ class LinkedInScrapper(OfferScrapper):
     def scrap(self):
         self.login()
         self.offer_data.role = self.title_get()
-        self.offer_data.remote = self.remote_get() == "En remoto"
+        self.offer_data.remote = self.remote_get()
         self.offer_data.company_name = self.company_name_get()
         self.offer_data.apply_url = self.url
         self.offer_data.location = self.location_get()
