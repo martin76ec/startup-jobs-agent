@@ -19,12 +19,20 @@ class PositionsDS:
         return cast(list, database["properties"]["Vertical"]["select"]["options"])
 
     @staticmethod
+    def remote_get_all(database: dict):
+        return cast(list, database["properties"]["Remote"]["select"]["options"])
+
+    @staticmethod
     def status_find(status_options: list, status: str):
         return next((opt for opt in status_options if opt["name"] == status), None)
 
     @staticmethod
     def vertical_find(options: list, vertical: str):
         return next((opt for opt in options if opt["name"] == vertical), None)
+
+    @staticmethod
+    def remote_find(options: list, remote: str):
+        return next((opt for opt in options if opt["name"] == remote), None)
 
     @staticmethod
     def status_list_add(status: Status):
@@ -91,9 +99,19 @@ class PositionsDS:
         )
 
     @staticmethod
+    def remote_get(remote: str):
+        database = cast(dict, notion.databases.retrieve(database_id=DB_ID))
+        options = PositionsDS.remote_get_all(database)
+        remote_found = PositionsDS.remote_find(options, remote)
+        if remote_found == None:
+            return cast(dict, PositionsDS.remote_find(options, "Hybrid"))["id"]
+        return remote_found["id"]
+
+    @staticmethod
     def offer_to_notion(offer: OfferData):
         status_id = PositionsDS.status_id_get_or_create("Scraped")
         vertical_id = PositionsDS.vertical_get_or_create(offer.vertical)
+        remote_id = PositionsDS.remote_get(offer.remote)
 
         return {
             "Status": {
@@ -103,7 +121,7 @@ class PositionsDS:
             },
             "Remote": {
                 "select": {
-                    "id": "f52dd2a7-0857-4a70-885e-b878e26e5d54",
+                    "id": remote_id,
                 },
             },
             "Startup": {

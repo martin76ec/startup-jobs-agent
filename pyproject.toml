@@ -40,6 +40,8 @@ python = "^3.10"
 
 [tool.poetry.group.dev.dependencies]
 poethepoet = "^0.32.2"
+black = "^25.1.0"
 
 [tool.poe.tasks]
 dev = "python main.py"
+lint = "python -m black --target-version=py37 ."

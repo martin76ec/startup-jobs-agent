@@ -36,10 +36,10 @@ class JobOfferStruct(BaseModel):
         default="", description="the name of the company that makes the offer"
     )
     vertical: str = Field(
-        default="Unknown",
+        default="unknown",
         description="The area of work (e.g Data, Engineering, Marketing[str,)",
     )
-    apply_url: str = Field(default="Unknown", description="An apply url for the offer")
+    apply_url: str = Field(default="unknown", description="An apply url for the offer")
 
 
 def job_raw_to_obj(raw_job: Dict[str, Any]) -> JobOffer:

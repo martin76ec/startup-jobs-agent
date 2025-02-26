@@ -7,7 +7,7 @@ from typing import Optional
 @dataclass
 class OfferData:
     role: Optional[str] = field(default=None)
-    remote: Optional[str] = field(default=None)
+    remote: str = field(default="unknown")
     company_name: Optional[str] = field(default="unknown")
     vertical: str = field(default="unknown")
     apply_url: Optional[str] = field(default=None)

@@ -12,4 +12,3 @@ class GeminiSingleton:
         if cls._instance is None:
             cls._instance = generativeai.GenerativeModel("gemini-1.5-flash")
         return cls._instance
-
