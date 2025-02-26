@@ -55,7 +55,7 @@ def run_app():
     )
 
     if input_type == "URL":
-        user_text = st.text_area("Enter your text below:")
+        user_text = st.text_area("Ingresa la url de la oferta:")
         if st.button("Procesar"):
             process_text_input(user_text)
 
