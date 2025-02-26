@@ -13,11 +13,11 @@ def process_text_input(url):
     with st.spinner(f"Processing {url}"):
         driver = ChromeDriverSingleton.get_instance()
         linkedin = LinkedInScrapper(url, driver)
-        summary = linkedin.scrap()
-        PositionsDS.position_create(summary)
+        offer = linkedin.scrap()
+        PositionsDS.position_create(offer)
 
     with st.expander("ver resumen"):
-        st.markdown(offer_to_markdown(summary))
+        st.markdown(offer_to_markdown(offer))
 
 
 def process_pdf(file: UploadedFile):
@@ -27,11 +27,11 @@ def process_pdf(file: UploadedFile):
             tmp_path = tmp.name
 
         pdf = PdfScrapper(tmp_path)
-        summary = pdf.scrap()
-        PositionsDS.position_create(summary)
+        offer = pdf.scrap()
+        PositionsDS.position_create(offer)
 
     with st.expander("ver resumen"):
-        st.markdown(offer_to_markdown(summary))
+        st.markdown(offer_to_markdown(offer))
 
 
 def process_image(file: UploadedFile):
@@ -41,11 +41,11 @@ def process_image(file: UploadedFile):
             image.save(tmp, format="WEBP")
             tmp_path = tmp.name
         pdf = PdfScrapper(tmp_path)
-        summary = pdf.scrap()
-        PositionsDS.position_create(summary)
+        offer = pdf.scrap()
+        PositionsDS.position_create(offer)
 
     with st.expander("Ver resumen"):
-        st.markdown(offer_to_markdown(summary))
+        st.markdown(offer_to_markdown(offer))
 
 
 def run_app():
