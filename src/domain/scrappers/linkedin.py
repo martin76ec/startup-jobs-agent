@@ -1,12 +1,13 @@
 from dataclasses import dataclass
+from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from bs4 import BeautifulSoup
-from src.constants.env import LINKEDIN_EMAIL, LINKEDIN_PASSWORD
-from src.constants.utils import error_handler_print
-from src.domain.jobs import job_summarize_description
-from src.scrapers.base import OfferScrapper
+from src.providers.constants.env import LINKEDIN_EMAIL, LINKEDIN_PASSWORD
+from src.providers.constants.utils import error_handler_print
+from src.domain.job_offers.job_offers import job_summarize_description
+from src.domain.scrappers.base import OfferScrapper
 import time
 
 
@@ -37,6 +38,10 @@ class LinkedInScrapper(OfferScrapper):
         location="/html/body/div[5]/div[3]/div[4]/div/div/main/div/div[2]/div[2]/div/div[2]/div/div/div[1]/div/div[1]/div/div[1]/div/div[3]/div/span[1]",
         description="job-details",
     )
+
+    def __init__(self, url: str, driver: WebDriver):
+        super().__init__(url)
+        self.driver = driver
 
     @error_handler_print()
     def login(self):
@@ -101,14 +106,19 @@ class LinkedInScrapper(OfferScrapper):
         self.offer_data.location = self.location_get()
         description = self.description_get()
 
-        if description != None:
-            summary = job_summarize_description(description)
+        if description == None:
+            raise (Exception("description not found."))
 
-            if self.offer_data.role == None: self.offer_data.role = summary.name
-            if self.offer_data.company_name == None: self.offer_data.company_name = summary.startup
-            if self.offer_data.location == None: self.offer_data.location = summary.company_hq
+        summary = job_summarize_description(description)
 
-            self.offer_data.vertical = summary.vertical
-            self.offer_data.details = summary.details
+        if self.offer_data.role == None:
+            self.offer_data.role = summary.name
+        if self.offer_data.company_name == None:
+            self.offer_data.company_name = summary.startup
+        if self.offer_data.location == None:
+            self.offer_data.location = summary.company_hq
+
+        self.offer_data.vertical = summary.vertical
+        self.offer_data.details = summary.details
 
         return self.offer_data

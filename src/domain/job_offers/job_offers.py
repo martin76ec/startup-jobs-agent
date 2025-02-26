@@ -1,12 +1,9 @@
-from time import strftime
 from typing import Any, Dict, Literal, Optional, cast
-from typing_extensions import Annotated
-
 from pydantic import BaseModel, Field
-from src.constants.env import DB_ID
-from src.infrastructure.notion import notion
+from src.providers.constants.env import DB_ID
+from src.providers.notion.notion import notion
 from dataclasses import dataclass
-from src.infrastructure.groq import groq_chat
+from src.providers.groq.groq import groq_chat
 from langchain_core.prompts import ChatPromptTemplate
 
 
@@ -42,6 +39,7 @@ class JobOfferStruct(BaseModel):
         default="Unknown",
         description="The area of work (e.g Data, Engineering, Marketing[str,)",
     )
+    apply_url: str = Field(default="Unknown", description="An apply url for the offer")
 
 
 def job_raw_to_obj(raw_job: Dict[str, Any]) -> JobOffer:
@@ -58,10 +56,6 @@ def job_raw_to_obj(raw_job: Dict[str, Any]) -> JobOffer:
         .get("Details", {})
         .get("rich_text", [{}])[0]
         .get("plain_text"),
-        id=raw_job.get("properties", {})
-        .get("ID", {})
-        .get("unique_id", {})
-        .get("number"),
         name=raw_job.get("properties", {})
         .get("Name", {})
         .get("title", [{}])[0]
@@ -100,7 +94,7 @@ def job_summarize_description(description: str):
         }
     )
 
-    return response
+    return cast(JobOfferStruct, response)
 
 
 async def jobs_get_by_status(status: Literal["In Review", "Aproved"]):

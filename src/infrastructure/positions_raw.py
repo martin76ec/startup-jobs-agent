@@ -1,8 +1,7 @@
 from typing import TypedDict, cast
-from src.constants.env import DB_ID
-from src.domain.jobs import JobOffer
-from src.infrastructure.notion import notion
-from src.scrapers.base import OfferData
+from src.providers.constants.env import DB_ID
+from src.providers.notion.notion import notion
+from src.domain.scrappers.base import OfferData
 
 
 class Status(TypedDict):
@@ -16,8 +15,16 @@ class PositionsDS:
         return cast(list, database["properties"]["Status"]["status"]["options"])
 
     @staticmethod
+    def vertical_get_all(database: dict):
+        return cast(list, database["properties"]["Vertical"]["select"]["options"])
+
+    @staticmethod
     def status_find(status_options: list, status: str):
         return next((opt for opt in status_options if opt["name"] == status), None)
+
+    @staticmethod
+    def vertical_find(options: list, vertical: str):
+        return next((opt for opt in options if opt["name"] == vertical), None)
 
     @staticmethod
     def status_list_add(status: Status):
@@ -40,52 +47,103 @@ class PositionsDS:
         return id
 
     @staticmethod
-    def status_id_get_or_create(status: Status):
+    def vertical_list_add(vertical: dict[str, str]):
+        database = cast(dict, notion.databases.retrieve(database_id=DB_ID))
+        options = PositionsDS.vertical_get_all(database)
+        data = options + [vertical]
+
+        notion.databases.update(
+            database_id=DB_ID,
+            properties={"Vertical": {"select": {"options": data}}},
+        )
+
+        database = cast(dict, notion.databases.retrieve(database_id=DB_ID))
+        id = next(
+            opt["id"]
+            for opt in PositionsDS.vertical_get_all(database)
+            if opt["name"] == vertical["name"]
+        )
+
+        return id
+
+    @staticmethod
+    def status_id_get_or_create(status: str):
         database = cast(dict, notion.databases.retrieve(database_id=DB_ID))
         status_options = PositionsDS.status_get_all(database)
-        existing_status = PositionsDS.status_find(status_options, status["name"])
+        existing_status = PositionsDS.status_find(status_options, status)
 
         return (
             existing_status["id"]
             if existing_status
-            else PositionsDS.status_list_add(status)
+            else PositionsDS.status_list_add({"name": status, "color": "default"})
         )
 
     @staticmethod
-    def position_create(offer: OfferData):
-        # status: Status = {"name": "Scraped", "color": ""}
-        # status_id = PositionsDS.status_id_get_or_create(status)
-        status_id = "123123213"
+    def vertical_get_or_create(vertical: str):
+        database = cast(dict, notion.databases.retrieve(database_id=DB_ID))
+        options = PositionsDS.vertical_get_all(database)
+        vertical_found = PositionsDS.vertical_find(options, vertical)
 
-        # data = {
-        #     "Role": {
-        #         "text": { "content": "test" } },
-        #     "Location": "test",
-        #     "Summary": "test",
-        #     "Vertical": "test",
-        #     "Apply URL": "test",
-        #     "Location": "test",
-        #     "Summary": "test",
-        #     "Status": {"id": status_id},
-        # }
-        #
-        data = {
-            "parent": {
-                "database_id": "your_database_id"
-            },  # Replace with your actual database ID
-            "properties": {
-                "Role": {"title": [{"text": {"content": "test"}}]},
-                "Location": {"rich_text": [{"text": {"content": "test"}}]},
-                "Summary": {"rich_text": [{"text": {"content": "test"}}]},
-                "Vertical": {"rich_text": [{"text": {"content": "test"}}]},
-                "Apply URL": {"url": "test"},
-                "Status": {
-                    "status": {
-                        "id": status_id
-                    }  # Ensure `status_id` is a valid Notion status ID
+        return (
+            vertical_found["id"]
+            if vertical_found
+            else PositionsDS.vertical_list_add({"name": vertical, "color": "default"})
+        )
+
+    @staticmethod
+    def offer_to_notion(offer: OfferData):
+        status_id = PositionsDS.status_id_get_or_create("Scraped")
+        vertical_id = PositionsDS.vertical_get_or_create(offer.vertical)
+
+        return {
+            "Status": {
+                "status": {
+                    "id": status_id,
                 },
             },
+            "Remote": {
+                "select": {
+                    "id": "f52dd2a7-0857-4a70-885e-b878e26e5d54",
+                },
+            },
+            "Startup": {
+                "rich_text": [
+                    {
+                        "text": {"content": offer.company_name},
+                    }
+                ],
+            },
+            "Location": {
+                "rich_text": [
+                    {
+                        "text": {"content": offer.location},
+                    }
+                ],
+            },
+            "Apply URL": {"url": offer.apply_url},
+            "Summary": {
+                "rich_text": [
+                    {
+                        "text": {"content": offer.details},
+                    }
+                ],
+            },
+            "Date Scrapped": {"date": {"start": offer.date_scraped, "end": None}},
+            "Vertical": {
+                "select": {
+                    "id": vertical_id,
+                },
+            },
+            "Role": {
+                "title": [
+                    {
+                        "text": {"content": offer.role},
+                    }
+                ],
+            },
         }
-        breakpoint()
 
+    @staticmethod
+    def position_create(offer: OfferData):
+        data = PositionsDS.offer_to_notion(offer)
         notion.pages.create(parent={"database_id": DB_ID}, properties=data)

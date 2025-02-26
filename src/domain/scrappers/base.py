@@ -1,30 +1,29 @@
 from abc import ABC, abstractmethod
 from dataclasses import asdict, dataclass, field
-from time import strftime
+from datetime import datetime, timezone
 from typing import Optional
-from google.auth import default
-from selenium.webdriver.chrome.webdriver import WebDriver
 
 
 @dataclass
 class OfferData:
     role: Optional[str] = field(default=None)
     remote: Optional[str] = field(default=None)
-    company_name: Optional[str] = field(default=None)
-    vertical: Optional[str] = field(default=None)
+    company_name: Optional[str] = field(default="unknown")
+    vertical: str = field(default="unknown")
     apply_url: Optional[str] = field(default=None)
     location: Optional[str] = field(default=None)
-    details: Optional[str] = field(default=None)
-    date_scraped: str = field(default=strftime("%m/%d/%Y:%H:%M:%S"))
+    details: Optional[str] = field(default="")
+    date_scraped: str = field(
+        default=datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    )
 
     def dict(self):
         return {k: str(v) for k, v in asdict(self).items()}
 
 
 class OfferScrapper(ABC):
-    def __init__(self, url: str, driver: WebDriver):
+    def __init__(self, url: str):
         self.url = url
-        self.driver = driver
         self.offer_data = OfferData()
 
     @abstractmethod

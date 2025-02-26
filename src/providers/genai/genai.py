@@ -1,5 +1,5 @@
 from google import generativeai
-from src.constants.env import GOOGLE_API_KEY
+from src.providers.constants.env import GOOGLE_API_KEY
 
 generativeai.configure(api_key=GOOGLE_API_KEY)
 

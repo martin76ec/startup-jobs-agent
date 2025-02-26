@@ -1,5 +1,7 @@
 import os
+from typing import cast
 from dotenv import load_dotenv
+from pydantic import SecretStr
 
 load_dotenv()
 
@@ -16,7 +18,7 @@ CHROME_DRIVER_PATH = os.getenv("CHROME_DRIVER_PATH") or "default"
 CHROME_BINARY_PATH = os.getenv("CHROME_BINARY_PATH") or "default"
 
 # GROQ
-GROQ_KEY = os.getenv("GROQ_KEY") or "default"
+GROQ_KEY = cast(SecretStr, os.getenv("GROQ_KEY") or "default")
 
 # GENAI
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY") or "default"
