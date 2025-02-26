@@ -28,7 +28,6 @@ def process_pdf(file: UploadedFile):
 
         pdf = PdfScrapper(tmp_path)
         summary = pdf.scrap()
-        breakpoint()
         PositionsDS.position_create(summary)
 
     with st.expander("ver resumen"):
