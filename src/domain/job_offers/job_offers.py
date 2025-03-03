@@ -80,7 +80,7 @@ def job_raw_to_obj(raw_job: Dict[str, Any]) -> JobOffer:
 
 
 def job_summarize_description(description: str):
-    system = "You are an expert human resources specialist, you are native in english and spanish, and you translate summarize and translate to spanish the job offer"
+    system = "You are an expert human resources specialist, you are native in english and spanish, and you translate summarize and translate to spanish the job offer. Be completely sure that the output is no more than 30 words or 70 tokens"
     human = "{text}"
     prompt = ChatPromptTemplate.from_messages([("system", system), ("human", human)])
     model = groq_chat.with_structured_output(JobOfferStruct)
