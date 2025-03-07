@@ -40,7 +40,6 @@ class PlainTextScrapper(OfferScrapper):
 
     def scrap(self):
         content = self.summarize_content(self.offer)
-        breakpoint()
         summary = job_summarize_description(content)
         self.offer_data.role = summary.name
         self.offer_data.remote = summary.remote

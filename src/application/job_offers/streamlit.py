@@ -13,7 +13,7 @@ import tempfile
 def process_text(text: str):
     with st.spinner(f"Processing..."):
         offer = PlainTextScrapper(text).scrap()
-        # PositionsDS.position_create(offer)
+        PositionsDS.position_create(offer)
 
     with st.expander("ver resumen"):
         st.markdown(offer_to_markdown(offer))
