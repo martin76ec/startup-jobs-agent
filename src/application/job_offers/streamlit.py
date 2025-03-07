@@ -1,3 +1,4 @@
+from src.domain.scrappers.plain_text import PlainTextScrapper
 from src.infrastructure.positions_raw import PositionsDS
 from src.providers.selenium.selenium import ChromeDriverSingleton
 from src.providers.utils.job_offers import offer_to_markdown
@@ -9,7 +10,16 @@ import streamlit as st
 import tempfile
 
 
-def process_text_input(url):
+def process_text(text: str):
+    with st.spinner(f"Processing..."):
+        offer = PlainTextScrapper(text).scrap()
+        # PositionsDS.position_create(offer)
+
+    with st.expander("ver resumen"):
+        st.markdown(offer_to_markdown(offer))
+
+
+def process_url(url):
     with st.spinner(f"Processing {url}"):
         driver = ChromeDriverSingleton.get_instance()
         linkedin = LinkedInScrapper(url, driver)
@@ -51,13 +61,18 @@ def process_image(file: UploadedFile):
 def run_app():
     st.title("Startuper Tool")
     input_type = st.sidebar.selectbox(
-        "Escoje la fuente de la oferta", ("URL", "PDF", "Imagen")
+        "Escoje la fuente de la oferta", ("URL", "PDF", "Imagen", "Texto")
     )
+
+    if input_type == "Texto":
+        user_text = st.text_area("Ingresa la oferta:")
+        if st.button("Procesar"):
+            process_text(user_text)
 
     if input_type == "URL":
         user_text = st.text_area("Ingresa la url de la oferta:")
         if st.button("Procesar"):
-            process_text_input(user_text)
+            process_url(user_text)
 
     elif input_type == "PDF":
         uploaded_pdf = st.file_uploader("Subir un pdf", type=["pdf"])
