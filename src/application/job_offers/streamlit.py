@@ -11,7 +11,7 @@ import tempfile
 
 
 def process_text(text: str):
-    with st.spinner(f"Processing..."):
+    with st.spinner("Processing..."):
         offer = PlainTextScrapper(text).scrap()
         PositionsDS.position_create(offer)
 
