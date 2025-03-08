@@ -43,5 +43,5 @@ poethepoet = "^0.32.2"
 black = "^25.1.0"
 
 [tool.poe.tasks]
-dev = "python main.py"
-lint = "python -m black --target-version=py37 ."
+dev = "streamlit main.py"
+lint = "ruff check --fix src && ruff format"

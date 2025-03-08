@@ -100,16 +100,16 @@ class LinkedInScrapper(OfferScrapper):
     self.offer_data.location = self.location_get()
     description = self.description_get()
 
-    if description == None:
+    if description is None:
       raise (Exception("description not found."))
 
     summary = job_summarize_description(description)
 
-    if self.offer_data.role == None:
+    if self.offer_data.role is None:
       self.offer_data.role = summary.name
-    if self.offer_data.company_name == None:
+    if self.offer_data.company_name is None:
       self.offer_data.company_name = summary.startup
-    if self.offer_data.location == None:
+    if self.offer_data.location is None:
       self.offer_data.location = summary.company_hq
 
     self.offer_data.vertical = summary.vertical
