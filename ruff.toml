@@ -36,11 +36,8 @@ lint.select = [
 
 line-length = 150
 
-exclude = [
-  "docs/",
-  "examples/",
-  "extra/",
-  "tinygrad/runtime/autogen",
-  "test/external/mlperf_resnet",
-  "test/external/mlperf_unet3d",
-]
+exclude = []
+
+[lint.isort]
+known-first-party = ["chat-backend"]
+combine-as-imports = true

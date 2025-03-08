@@ -1,5 +1,6 @@
 import os
 from typing import cast
+
 from dotenv import load_dotenv
 from pydantic import SecretStr
 
