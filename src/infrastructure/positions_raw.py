@@ -47,9 +47,7 @@ class PositionsDS:
     )
 
     database = cast(dict, notion.databases.retrieve(database_id=DB_ID))
-    id = next(opt["id"] for opt in PositionsDS.status_get_all(database) if opt["name"] == status["name"])
-
-    return id
+    return next(opt["id"] for opt in PositionsDS.status_get_all(database) if opt["name"] == status["name"])
 
   @staticmethod
   def vertical_list_add(vertical: dict[str, str]):
@@ -63,9 +61,7 @@ class PositionsDS:
     )
 
     database = cast(dict, notion.databases.retrieve(database_id=DB_ID))
-    id = next(opt["id"] for opt in PositionsDS.vertical_get_all(database) if opt["name"] == vertical["name"])
-
-    return id
+    return next(opt["id"] for opt in PositionsDS.vertical_get_all(database) if opt["name"] == vertical["name"])
 
   @staticmethod
   def status_id_get_or_create(status: str):
@@ -88,7 +84,7 @@ class PositionsDS:
     database = cast(dict, notion.databases.retrieve(database_id=DB_ID))
     options = PositionsDS.remote_get_all(database)
     remote_found = PositionsDS.remote_find(options, remote)
-    if remote_found == None:
+    if remote_found is None:
       return cast(dict, PositionsDS.remote_find(options, "Hybrid"))["id"]
     return remote_found["id"]
 
