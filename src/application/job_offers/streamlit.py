@@ -78,25 +78,28 @@ def _process_linkedin_url(url: str) -> str:
 
 def process_url(url: str):
   with st.spinner(f"Processing {url}"):
-    driver = ChromeDriverSingleton.get_instance()
-
-    parsed_url = urlparse(url)
-    if "linkedin.com" in parsed_url.netloc:
-      linkedin_url = _process_linkedin_url(url)
-      scrapper = LinkedInScrapper(linkedin_url, driver)
-    else:
-      scrapper = GeneralScrapper(url, driver)
-
     try:
-      offer = scrapper.scrap()
-      PositionsDS.position_create(offer)
+      driver = ChromeDriverSingleton.get_instance()
+
+      parsed_url = urlparse(url)
+      if "linkedin.com" in parsed_url.netloc:
+        linkedin_url = _process_linkedin_url(url)
+        scrapper = LinkedInScrapper(linkedin_url, driver)
+      else:
+        scrapper = GeneralScrapper(url, driver)
+
+        offer = scrapper.scrap()
+        PositionsDS.position_create(offer)
 
       with st.expander("ver resumen"):
         st.markdown(offer_to_markdown(offer))
 
     except Exception as e:
-      st.error(f"An error occurred while processing the URL: {e}")
-      st.error(f"url: {url}")
+      # st.error(f"An error occurred while processing the URL: {e}")
+      # st.error(f"url: {url}")
+      st.error(
+        "Tenemos un error interno, lo estamos solucionando, pero podrías probar con las opciones de PDF, imagen y Texto, agrademos mucho tu comprensión"
+      )
 
 
 def process_pdf(file: UploadedFile):
