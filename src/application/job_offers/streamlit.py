@@ -11,6 +11,7 @@ from src.domain.scrappers.general import GeneralScrapper
 from src.domain.scrappers.linkedin import LinkedInScrapper
 from src.domain.scrappers.pdf import PdfScrapper
 from src.domain.scrappers.plain_text import PlainTextScrapper
+from src.domain.scrappers.generic import GenericWebScraper
 from src.infrastructure.positions_raw import PositionsDS
 from src.providers.selenium.selenium import ChromeDriverSingleton
 from src.providers.utils.job_offers import offer_to_markdown
@@ -78,16 +79,22 @@ def _process_linkedin_url(url: str) -> str:
 
 def process_url(url: str):
   with st.spinner(f"Processing {url}"):
-    driver = ChromeDriverSingleton.get_instance()
-
     parsed_url = urlparse(url)
-    if "linkedin.com" in parsed_url.netloc:
-      linkedin_url = _process_linkedin_url(url)
-      scrapper = LinkedInScrapper(linkedin_url, driver)
-    else:
-      scrapper = GeneralScrapper(url, driver)
-
+    
     try:
+      if "linkedin.com" in parsed_url.netloc:
+        driver = ChromeDriverSingleton.get_instance()
+        linkedin_url = _process_linkedin_url(url)
+        scrapper = LinkedInScrapper(linkedin_url, driver)
+      else:
+        # Try the generic scraper first
+        try:
+          scrapper = GenericWebScraper(url)
+        except Exception as e:
+          st.warning(f"Generic scraper failed, falling back to Selenium-based scraper: {e}")
+          driver = ChromeDriverSingleton.get_instance()
+          scrapper = GeneralScrapper(url, driver)
+
       offer = scrapper.scrap()
       PositionsDS.position_create(offer)
 
