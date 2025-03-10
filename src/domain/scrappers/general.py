@@ -26,5 +26,4 @@ class GeneralScrapper(OfferScrapper):
 
   def scrap(self):
     content = self.get_page_text_from_dom()
-    breakpoint()
     return content

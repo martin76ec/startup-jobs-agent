@@ -38,7 +38,7 @@ class LinkedInScrapper(OfferScrapper):
     position="/html/body/div[6]/div[3]/div[2]/div/div/main/div[2]/div[1]/div/div[1]/div/div/div/div[4]/ul/li[1]/span/span[1]/span/span[2]",
     remote="/html/body/div[5]/div[3]/div[4]/div/div/main/div/div[2]/div[2]/div/div[2]/div/div/div[1]/div/div[1]/div/div[1]/div/div[4]/ul/li[1]/span/span[1]/span/span[1]",
     location="/html/body/div[5]/div[3]/div[4]/div/div/main/div/div[2]/div[2]/div/div[2]/div/div/div[1]/div/div[1]/div/div[1]/div/div[3]/div/span[1]",
-    description="job-details",
+    description="/html/body/div[6]/div[3]/div[4]/div/div/main/div/div[2]/div[2]/div/div[2]/div/div/div[1]/div/div[4]/article",
   )
 
   def __init__(self, url: str, driver: WebDriver):
@@ -80,16 +80,29 @@ class LinkedInScrapper(OfferScrapper):
 
   @error_handler_print()
   def description_get(self):
-    wait = WebDriverWait(self.driver, 10)
-    description_element = wait.until(EC.presence_of_element_located((By.ID, self.xpaths.description)))
+    wait = WebDriverWait(self.driver, 20)  # Increased timeout for complete page load
+    wait.until(EC.presence_of_element_located((By.TAG_NAME, "body")))  # Wait for body to ensure page load
 
-    description = description_element.get_attribute("innerHTML")
+    description = self.driver.page_source
     if description is None:
       return None
 
     soup = BeautifulSoup(description, "html.parser")
     paragraphs = soup.find_all(["p", "li"])
     return "\n".join([el.get_text(strip=True) for el in paragraphs if el.get_text(strip=True)])
+
+  # @error_handler_print()
+  # def description_get(self):
+  #   wait = WebDriverWait(self.driver, 10)
+  #   description_element = wait.until(EC.presence_of_element_located((By.ID, self.xpaths.description)))
+  #
+  #   description = description_element.get_attribute("innerHTML")
+  #   if description is None:
+  #     return None
+  #
+  #   soup = BeautifulSoup(description, "html.parser")
+  #   paragraphs = soup.find_all(["p", "li"])
+  #   return "\n".join([el.get_text(strip=True) for el in paragraphs if el.get_text(strip=True)])
 
   def scrap(self):
     self.login()
@@ -111,6 +124,8 @@ class LinkedInScrapper(OfferScrapper):
       self.offer_data.company_name = summary.startup
     if self.offer_data.location is None:
       self.offer_data.location = summary.company_hq
+    if self.offer_data.remote is None:
+      self.offer_data.remote = summary.remote
 
     self.offer_data.vertical = summary.vertical
     self.offer_data.details = summary.details
