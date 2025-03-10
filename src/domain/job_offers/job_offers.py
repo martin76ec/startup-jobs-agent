@@ -1,8 +1,10 @@
 from dataclasses import dataclass
 from typing import Any, Dict, Literal, Optional, cast
+from typing_extensions import deprecated
 
 from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel, Field
+from trustcall import create_extractor
 
 from src.providers.constants.env import DB_ID
 from src.providers.groq.groq import groq_chat
@@ -39,6 +41,10 @@ class JobOfferStruct(BaseModel):
 
 
 def job_raw_to_obj(raw_job: Dict[str, Any]) -> JobOffer:
+  """
+  @deprecated
+  Keep it in case retreiving from notion is a feature again, it was not easy to realize the schema
+  """
   return JobOffer(
     apply_url=raw_job.get("properties", {}).get("Apply URL", {}).get("url"),
     company_hq=raw_job.get("properties", {}).get("Company HQ", {}).get("rich_text", [{}])[0].get("plain_text"),
@@ -50,6 +56,38 @@ def job_raw_to_obj(raw_job: Dict[str, Any]) -> JobOffer:
     status=raw_job.get("properties", {}).get("Status", {}).get("status", {}).get("name"),
     vertical=raw_job.get("properties", {}).get("Vertical", {}).get("select", {}).get("name"),
   )
+
+
+def job_parse(job: str):
+  system = """
+  # Rules
+  You are an expert human resources specialist, you are native in english and spanish.
+  Your only work is to extract data and translate it to perfect spanish.
+  Do not hallucinate.
+  Do not add text that is not provided in the input.
+
+  Build a JSON object following '# Steps'
+
+  # Steps
+  1. [key: name] Identify, extract the name of the offered role
+  2. [key: remote] Identify, extract and standardize (remote | hybrid | in place) the work modality
+  3. [key: startup] Identify, extract and standardize the name of the company that offers the role
+  4. [key: vertical] Identify, extract and standardize the professional area of work (e.g Data, Software Engineering, Marketing)
+  5. [key: company_hq] Identify, extract and standardize 'City, Country' the location of the job if applicable
+  6. [key: details] Identify, extract and summarize the description into no more than 30 words length.
+  6. [key: apply_url] Identify and application url if exists (if not keep it as null).
+  """
+  human = "{text}"
+  # prompt = ChatPromptTemplate.from_messages([("system", system), ("human", human)])
+  model = groq_chat
+  # chain = prompt | model
+  bound = create_extractor(
+    model,
+    tools=[JobOfferStruct],
+    tool_choice="JobOfferStruct",
+  )
+  response = bound.invoke({"system": system, "human": human, "text": job})
+  return cast(JobOfferStruct, response)
 
 
 def job_summarize_description(description: str):

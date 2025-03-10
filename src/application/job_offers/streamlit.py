@@ -2,6 +2,7 @@ import re
 import tempfile
 from urllib.parse import parse_qs, urlparse
 
+from src.domain.scrappers.linkedin_job import LinkedInJobScrapper
 import streamlit as st
 from PIL import Image
 from selenium.webdriver.chrome.webdriver import WebDriver
@@ -83,7 +84,7 @@ def process_url(url: str):
     parsed_url = urlparse(url)
     if "linkedin.com" in parsed_url.netloc:
       linkedin_url = _process_linkedin_url(url)
-      scrapper = LinkedInScrapper(linkedin_url, driver)
+      scrapper = LinkedInJobScrapper(linkedin_url, driver)
     else:
       scrapper = GeneralScrapper(url, driver)
 
