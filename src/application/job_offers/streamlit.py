@@ -88,8 +88,8 @@ def process_url(url: str):
       else:
         scrapper = GeneralScrapper(url, driver)
 
-        offer = scrapper.scrap()
-        PositionsDS.position_create(offer)
+      offer = scrapper.scrap()
+      PositionsDS.position_create(offer)
 
       with st.expander("ver resumen"):
         st.markdown(offer_to_markdown(offer))
@@ -97,6 +97,7 @@ def process_url(url: str):
     except Exception as e:
       # st.error(f"An error occurred while processing the URL: {e}")
       # st.error(f"url: {url}")
+      print(e)
       st.error(
         "Tenemos un error interno, lo estamos solucionando, pero podrías probar con las opciones de PDF, imagen y Texto, agrademos mucho tu comprensión"
       )
