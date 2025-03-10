@@ -3,3 +3,4 @@
 __pycache__
 todos.md
 .devcontainer
+.ruff_cache
