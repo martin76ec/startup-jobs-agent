@@ -1,12 +1,13 @@
 import re
 import tempfile
+from typing import Any, cast
 from urllib.parse import parse_qs, urlparse
 
 import streamlit as st
 from PIL import Image
-from selenium.webdriver.chrome.webdriver import WebDriver
 from streamlit.runtime.uploaded_file_manager import UploadedFile
 
+from src.domain.scrappers.firecrawl import FirecrawlScrapper
 from src.domain.scrappers.general import GeneralScrapper
 from src.domain.scrappers.linkedin import LinkedInScrapper
 from src.domain.scrappers.pdf import PdfScrapper
@@ -14,15 +15,6 @@ from src.domain.scrappers.plain_text import PlainTextScrapper
 from src.infrastructure.positions_raw import PositionsDS
 from src.providers.selenium.selenium import ChromeDriverSingleton
 from src.providers.utils.job_offers import offer_to_markdown
-
-
-def process_text(text: str):
-  with st.spinner("Processing..."):
-    offer = PlainTextScrapper(text).scrap()
-    PositionsDS.position_create(offer)
-
-  with st.expander("ver resumen"):
-    st.markdown(offer_to_markdown(offer))
 
 
 def _extract_linkedin_job_id(url: str) -> str | None:
@@ -65,92 +57,106 @@ def _process_linkedin_url(url: str) -> str:
     return url
 
 
-# def process_url(url):
-#   with st.spinner(f"Processing {url}"):
-#     driver = ChromeDriverSingleton.get_instance()
-#     linkedin = LinkedInScrapper(url, driver)
-#     offer = linkedin.scrap()
-#     PositionsDS.position_create(offer)
-#
-#   with st.expander("ver resumen"):
-#     st.markdown(offer_to_markdown(offer))
+def process_text(text: str):
+  offer = PlainTextScrapper(text).scrap()
+  PositionsDS.position_create(offer)
+  return offer
 
 
 def process_url(url: str):
-  with st.spinner(f"Processing {url}"):
-    try:
-      driver = ChromeDriverSingleton.get_instance()
+  driver = ChromeDriverSingleton.get_instance()
+  parsed_url = urlparse(url)
 
-      parsed_url = urlparse(url)
-      if "linkedin.com" in parsed_url.netloc:
-        linkedin_url = _process_linkedin_url(url)
-        scrapper = LinkedInScrapper(linkedin_url, driver)
-      else:
-        scrapper = GeneralScrapper(url, driver)
+  if "linkedin.com" in parsed_url.netloc:
+    linkedin_url = _process_linkedin_url(url)
+    scrapper = LinkedInScrapper(linkedin_url, driver)
+  else:
+    scrapper = FirecrawlScrapper(url)
 
-      offer = scrapper.scrap()
-      PositionsDS.position_create(offer)
-
-      with st.expander("ver resumen"):
-        st.markdown(offer_to_markdown(offer))
-
-    except Exception as e:
-      # st.error(f"An error occurred while processing the URL: {e}")
-      # st.error(f"url: {url}")
-      print(e)
-      st.error(
-        "Tenemos un error interno, lo estamos solucionando, pero podrías probar con las opciones de PDF, imagen y Texto, agrademos mucho tu comprensión"
-      )
+  offer = scrapper.scrap()
+  PositionsDS.position_create(offer)
+  return offer
 
 
 def process_pdf(file: UploadedFile):
-  with st.spinner(f"Processing {file.name}"):
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
-      tmp.write(file.read())
-      tmp_path = tmp.name
+  with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
+    tmp.write(file.read())
+    tmp_path = tmp.name
 
-    pdf = PdfScrapper(tmp_path)
-    offer = pdf.scrap()
-    PositionsDS.position_create(offer)
-
-  with st.expander("ver resumen"):
-    st.markdown(offer_to_markdown(offer))
+  pdf = PdfScrapper(tmp_path)
+  offer = pdf.scrap()
+  PositionsDS.position_create(offer)
+  return offer
 
 
 def process_image(file: UploadedFile):
-  with st.spinner(f"Processing {file.name}"):
-    image = Image.open(file)
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".webp") as tmp:
-      image.save(tmp, format="WEBP")
-      tmp_path = tmp.name
-    pdf = PdfScrapper(tmp_path)
-    offer = pdf.scrap()
-    PositionsDS.position_create(offer)
-
-  with st.expander("Ver resumen"):
-    st.markdown(offer_to_markdown(offer))
+  image = Image.open(file)
+  with tempfile.NamedTemporaryFile(delete=False, suffix=".webp") as tmp:
+    image.save(tmp, format="WEBP")
+    tmp_path = tmp.name
+  pdf = PdfScrapper(tmp_path)
+  offer = pdf.scrap()
+  PositionsDS.position_create(offer)
+  return offer
 
 
 def run_app():
   st.title("Startuper Tool")
+  processing = st.session_state.get("processing", False)
   input_type = st.sidebar.selectbox("Escoje la fuente de la oferta", ("URL", "PDF", "Imagen", "Texto"))
+  target: Any = st.session_state.get("target", None)
+  file: Any = st.session_state.get("file", None)
+  response = st.session_state.get("response", None)
 
-  if input_type == "Texto":
-    user_text = st.text_area("Ingresa la oferta:")
-    if st.button("Procesar"):
-      process_text(user_text)
+  labels = {
+    "URL": "Ingresa la url de la oferta:",
+    "PDF": "Subir un pdf:",
+    "Imagen": "Subir una imagen:",
+    "Texto": "Ingrese la oferta:",
+  }
 
-  if input_type == "URL":
-    user_text = st.text_area("Ingresa la url de la oferta:")
-    if st.button("Procesar"):
-      process_url(user_text)
+  user_text = None
+  user_file = None
 
-  elif input_type == "PDF":
-    uploaded_pdf = st.file_uploader("Subir un pdf", type=["pdf"])
-    if uploaded_pdf is not None:
-      process_pdf(uploaded_pdf)
-
+  if input_type == "PDF":
+    user_file = st.file_uploader("Subir un pdf", type=["pdf"])
   elif input_type == "Imagen":
-    uploaded_image = st.file_uploader("Subir una imagen", type=["png", "jpg", "jpeg"])
-    if uploaded_image is not None:
-      process_image(uploaded_image)
+    user_file = st.file_uploader("Subir una imagen", type=["png", "jpeg", "jpg"], disabled=processing)
+  else:
+    user_text = st.text_area(labels[input_type], disabled=processing)
+
+  if st.button("Procesar", disabled=processing):
+    st.session_state.processing = True
+    st.session_state.response = None
+    st.rerun()
+
+  if response is not None:
+    with st.expander("ver resumen"):
+      st.markdown(offer_to_markdown(response))
+
+  if processing:
+    res = None
+    with st.spinner("Procesando..."):
+      try:
+        if input_type == "URL":
+          res = process_url(target)
+        elif input_type == "PDF":
+          res = process_pdf(file)
+        elif input_type == "Imagen":
+          res = process_image(file)
+        else:
+          res = process_text(target)
+      except Exception as e:
+        print(e)
+        st.error(
+          "Tenemos un error interno, lo estamos solucionando, pero podrías probar con las opciones de PDF, imagen y Texto, agrademos mucho tu comprensión"
+        )
+
+      st.session_state.processing = False
+      st.session_state.response = res
+      st.rerun()
+
+  if not processing:
+    st.session_state.handler = input_type
+    st.session_state.target = user_text
+    st.session_state.file = user_file
