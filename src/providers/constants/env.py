@@ -23,3 +23,6 @@ GROQ_KEY = cast(SecretStr, os.getenv("GROQ_KEY") or "default")
 
 # GENAI
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY") or "default"
+
+# FIRECRAWL
+FIRECRAWL_API_KEY = os.getenv("FIRECRAWL_API_KEY" or "default")
