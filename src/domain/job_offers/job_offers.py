@@ -31,10 +31,20 @@ class JobOfferStruct(BaseModel):
   name: str = Field(default="", description="the role of the position")
   remote: str = Field(default="Remote", description="the type of job, Remote, Hybrid or On-Site")
   startup: str = Field(default="", description="the name of the company that makes the offer")
-  vertical: str = Field(
-    default="unknown",
-    description="The area of work (e.g Data, Engineering, Marketing[str,)",
-  )
+  vertical: Literal[
+    "Admin",
+    "Backend",
+    "Clouding",
+    "CX / User Research",
+    "Data / ML",
+    "Finance",
+    "Frontend",
+    "Growth / Marketing",
+    "Marketing",
+    "Product",
+    "Sales",
+    "UX/UI Design",
+  ]
   apply_url: str = Field(default="unknown", description="An apply url for the offer")
 
 
