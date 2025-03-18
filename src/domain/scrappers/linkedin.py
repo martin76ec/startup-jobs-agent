@@ -80,8 +80,8 @@ class LinkedInScrapper(OfferScrapper):
 
   @error_handler_print()
   def description_get(self):
-    wait = WebDriverWait(self.driver, 20)  # Increased timeout for complete page load
-    wait.until(EC.presence_of_element_located((By.TAG_NAME, "body")))  # Wait for body to ensure page load
+    wait = WebDriverWait(self.driver, 20)
+    wait.until(EC.presence_of_element_located((By.TAG_NAME, "body")))
 
     description = self.driver.page_source
     if description is None:
@@ -90,19 +90,6 @@ class LinkedInScrapper(OfferScrapper):
     soup = BeautifulSoup(description, "html.parser")
     paragraphs = soup.find_all(["p", "li"])
     return "\n".join([el.get_text(strip=True) for el in paragraphs if el.get_text(strip=True)])
-
-  # @error_handler_print()
-  # def description_get(self):
-  #   wait = WebDriverWait(self.driver, 10)
-  #   description_element = wait.until(EC.presence_of_element_located((By.ID, self.xpaths.description)))
-  #
-  #   description = description_element.get_attribute("innerHTML")
-  #   if description is None:
-  #     return None
-  #
-  #   soup = BeautifulSoup(description, "html.parser")
-  #   paragraphs = soup.find_all(["p", "li"])
-  #   return "\n".join([el.get_text(strip=True) for el in paragraphs if el.get_text(strip=True)])
 
   def scrap(self):
     self.login()
