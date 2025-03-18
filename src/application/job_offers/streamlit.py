@@ -7,6 +7,7 @@ import streamlit as st
 from PIL import Image
 from streamlit.runtime.uploaded_file_manager import UploadedFile
 
+from src.domain.scrappers.firecrawl import FirecrawlScrapper
 from src.domain.scrappers.general import GeneralScrapper
 from src.domain.scrappers.linkedin import LinkedInScrapper
 from src.domain.scrappers.pdf import PdfScrapper
@@ -70,7 +71,7 @@ def process_url(url: str):
     linkedin_url = _process_linkedin_url(url)
     scrapper = LinkedInScrapper(linkedin_url, driver)
   else:
-    scrapper = GeneralScrapper(url, driver)
+    scrapper = FirecrawlScrapper(url)
 
   offer = scrapper.scrap()
   PositionsDS.position_create(offer)
